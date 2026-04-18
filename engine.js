@@ -1,93 +1,76 @@
-let currentMode = 'semantic';
-let currentLang = 'en';
-
-const config = {
+const i18n = {
     en: {
-        fillers: [
-            { r: /could you please|can you please|i was wondering if you could/gi, t: "" },
-            { r: /i would like to have|i want you to/gi, t: "Task:" },
-            { r: /due to the fact that|because of the fact that/gi, t: "because" },
-            { r: /at this point in time|in the current climate/gi, t: "currently" },
-            { r: /give suggestions on what we could add too/gi, t: "Suggest additions" },
-            { r: /so that we could/gi, t: "to" }
-        ],
-        shorthand: {
-            "prompt engineering": "PE",
-            "prompt compression": "PC",
-            "efficiently": "eff.",
-            "instructions": "rules"
-        }
+        "version": "Semantic Engine v3.1",
+        "mode-semantic": "Semantic",
+        "mode-xml": "XML (Claude)",
+        "mode-aggressive": "Aggressive",
+        "lang-label": "LANGUAGE",
+        "title": "Optimize Prompt",
+        "subtitle": "Compressing logic to save tokens and prevent 3-hour lockouts.",
+        "placeholder": "Paste your idea or code request here...",
+        "btn-run": "COMPRESS & OPTIMIZE",
+        "result-head": "Result",
+        "copy": "Copy",
+        "stat-old": "Original",
+        "stat-new": "Compressed",
+        "stat-saved": "Saved"
     },
     ja: {
-        fillers: [
-            { r: /〜ていただけますでしょうか|〜ていただけますか|〜てください/g, t: "。 " },
-            { r: /お世話になっております。|よろしくお願いいたします。/g, t: "" },
-            { r: /〜について教えてください/g, t: "の詳細" },
-            { r: /といった形になります/g, t: "です" }
-        ],
-        shorthand: {
-            "プロンプト": "PRMT",
-            "効率的": "効率"
-        }
+        "version": "セマンティックエンジン v3.1",
+        "mode-semantic": "セマンティック",
+        "mode-xml": "XML (Claude用)",
+        "mode-aggressive": "徹底圧縮",
+        "lang-label": "言語切り替え",
+        "title": "プロンプト最適化",
+        "subtitle": "トークンを節約し、3時間の利用制限を回避します。",
+        "placeholder": "ここにアイデアやコードのリクエストを貼り付けてください...",
+        "btn-run": "圧縮して最適化する",
+        "result-head": "結果",
+        "copy": "コピー",
+        "stat-old": "元サイズ",
+        "stat-new": "圧縮後",
+        "stat-saved": "節約率"
     }
 };
 
-function setMode(m) {
-    currentMode = m;
-    // UI Update: Highlight active mode
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('active', 'bg-[#4bdad8]/10', 'text-[#4bdad8]', 'border-l-4', 'border-[#4bdad8]');
-    });
-    const activeBtn = document.getElementById('m-' + m);
-    activeBtn.classList.add('active', 'bg-[#4bdad8]/10', 'text-[#4bdad8]', 'border-l-4', 'border-[#4bdad8]');
-}
+let currentMode = 'semantic';
+let currentLang = 'en';
 
 function setLang(l) {
     currentLang = l;
-    // UI Update: Highlight active language
-    document.getElementById('l-en').className = l === 'en' ? 'lang-btn active bg-[#4bdad8] text-[#002d2d]' : 'lang-btn text-slate-500';
-    document.getElementById('l-ja').className = l === 'ja' ? 'lang-btn active bg-[#4bdad8] text-[#002d2d]' : 'lang-btn text-slate-500';
-}
+    
+    // 1. Update UI Buttons Highlighting
+    document.getElementById('l-en').className = l === 'en' ? 'lang-btn active bg-[#4bdad8] text-[#002d2d] flex-1 py-2 rounded font-bold transition-all' : 'lang-btn flex-1 py-2 rounded text-slate-500 transition-all';
+    document.getElementById('l-ja').className = l === 'ja' ? 'lang-btn active bg-[#4bdad8] text-[#002d2d] flex-1 py-2 rounded font-bold transition-all' : 'lang-btn flex-1 py-2 rounded text-slate-500 transition-all';
 
-function process() {
-    let raw = document.getElementById('input').value;
-    if (!raw.trim()) return;
-
-    let optimized = raw;
-
-    // 1. Language-Specific Pruning
-    config[currentLang].fillers.forEach(item => {
-        optimized = optimized.replace(item.r, item.t);
+    // 2. Loop through all data-key elements and translate
+    document.querySelectorAll('[data-key]').forEach(el => {
+        const key = el.getAttribute('data-key');
+        if (i18n[l][key]) {
+            el.innerText = i18n[l][key];
+        }
     });
 
-    // 2. Technical Shorthand
-    Object.entries(config[currentLang].shorthand).forEach(([key, val]) => {
-        optimized = optimized.replace(new RegExp(key, 'gi'), val);
+    // 3. Update Placeholder
+    const input = document.getElementById('input');
+    input.placeholder = i18n[l]["placeholder"];
+}
+
+function setMode(m) {
+    currentMode = m;
+    // Audit: Fix highlighting logic
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-[#4bdad8]/10', 'text-[#4bdad8]', 'border-l-4', 'border-[#4bdad8]');
+        btn.classList.add('text-slate-400');
     });
-
-    // 3. Mode Logic Logic
-    if (currentMode === 'xml') {
-        optimized = `<context>\n${optimized.trim()}\n</context>\n<task>Process concisely</task>`;
-    } else if (currentMode === 'aggressive') {
-        optimized = optimized.replace(/\b(the|a|an)\b/gi, "")
-                             .replace(/[.,!?;:]/g, "")
-                             .replace(/\s\s+/g, ' ');
-    } else if (currentMode === 'semantic') {
-        optimized = `[Task]: ${optimized.trim()}\n[Output]: Concise/No-filler`;
-    }
-
-    updateUI(raw, optimized.trim());
+    
+    const activeBtn = document.getElementById('m-' + m);
+    activeBtn.classList.remove('text-slate-400');
+    activeBtn.classList.add('active', 'bg-[#4bdad8]/10', 'text-[#4bdad8]', 'border-l-4', 'border-[#4bdad8]');
 }
 
-function updateUI(oldVal, newVal) {
-    // Audit: Use a more accurate token estimate (4 chars/token for EN, 1 char/token for JA)
-    const oldTokens = currentLang === 'en' ? Math.ceil(oldVal.length / 4) : oldVal.length;
-    const newTokens = currentLang === 'en' ? Math.ceil(newVal.length / 4) : newVal.length;
-    const pct = Math.round(((oldVal.length - newVal.length) / oldVal.length) * 100);
-
-    document.getElementById('output').innerText = newVal;
-    document.getElementById('stat-old').innerText = oldTokens;
-    document.getElementById('stat-new').innerText = newTokens;
-    document.getElementById('stat-pct').innerText = (pct > 0 ? pct : 0) + "%";
-    document.getElementById('result-box').classList.remove('hidden');
-}
+// Ensure the initial state is set on load
+window.onload = () => {
+    setLang('en');
+    setMode('semantic');
+};
