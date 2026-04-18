@@ -3,36 +3,23 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Botanical v5.0 | Final Audit</title>
+    <title>Kompressor | Final Audit</title>
     <style>
         :root { --teal: #4bdad8; --bg: #0a0f0f; --card: #0d1414; --text: #dce8e7; }
-        body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; }
-        
-        /* Sidebar Navigation */
+        body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; }
         aside { width: 260px; background: var(--card); border-right: 1px solid #ffffff10; display: flex; flex-direction: column; padding: 25px; box-sizing: border-box; }
-        .logo { font-size: 22px; font-weight: 900; color: var(--teal); margin-bottom: 40px; letter-spacing: -1px; }
-        
-        .nav-btn { background: none; border: none; color: #64748b; padding: 12px 15px; text-align: left; width: 100%; border-radius: 10px; cursor: pointer; font-weight: 600; margin-bottom: 8px; border-left: 3px solid transparent; transition: 0.2s; }
+        .logo { font-size: 22px; font-weight: 900; color: var(--teal); margin-bottom: 40px; }
+        .nav-btn { background: none; border: none; color: #64748b; padding: 12px 15px; text-align: left; width: 100%; border-radius: 10px; cursor: pointer; font-weight: 600; margin-bottom: 8px; border-left: 3px solid transparent; }
         .nav-btn.active { background: #4bdad815; color: var(--teal); border-left-color: var(--teal); }
-
         .lang-box { display: flex; background: #000; padding: 4px; border-radius: 8px; margin-top: auto; }
-        .l-btn { flex: 1; background: none; border: none; color: #475569; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: 800; cursor: pointer; }
-        .l-btn.active { background: var(--teal); color: #002d2d; }
-
-        /* Workspace */
+        .l-btn { flex: 1; background: none; border: none; color: #475569; padding: 8px; cursor: pointer; font-size: 11px; font-weight: 800; }
+        .l-btn.active { background: var(--teal); color: #002d2d; border-radius: 6px; }
         main { flex-grow: 1; padding: 60px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; }
         .container { width: 100%; max-width: 700px; }
-        h1 { font-size: 36px; font-weight: 800; margin: 0 0 10px; }
-        p { color: #64748b; margin-bottom: 30px; }
-        
         textarea { width: 100%; height: 200px; background: #131b1b; border: 1px solid #ffffff10; border-radius: 15px; padding: 20px; color: #fff; font-size: 16px; outline: none; box-sizing: border-box; resize: none; }
-        textarea:focus { border-color: var(--teal); }
-        
         .go-btn { width: 100%; background: var(--teal); color: #002d2d; border: none; padding: 18px; border-radius: 12px; font-size: 18px; font-weight: 800; cursor: pointer; margin-top: 20px; }
-
-        /* Results Area */
-        #results { margin-top: 30px; display: none; }
-        .out { background: #ffffff05; border: 1px solid #4bdad825; padding: 20px; border-radius: 15px; color: #bbf6f5; white-space: pre-wrap; margin-bottom: 20px; line-height: 1.5; }
+        #results { margin-top: 30px; display: none; width: 100%; }
+        .out { background: #ffffff05; border: 1px solid #4bdad825; padding: 20px; border-radius: 15px; color: #bbf6f5; white-space: pre-wrap; margin-bottom: 20px; }
         .stats { display: flex; gap: 15px; }
         .stat { flex: 1; background: #ffffff03; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #ffffff05; }
         .label { display: block; font-size: 10px; font-weight: 800; color: #475569; margin-bottom: 5px; text-transform: uppercase; }
@@ -40,15 +27,13 @@
     </style>
 </head>
 <body>
-
     <aside>
-        <div class="logo">BOTANICAL</div>
+        <div class="logo">KOmpressor</div>
         <div style="flex-grow: 1;">
             <button id="m-semantic" class="nav-btn active" onclick="setM('semantic')">Semantic</button>
             <button id="m-xml" class="nav-btn" onclick="setM('xml')">XML (Claude)</button>
             <button id="m-aggressive" class="nav-btn" onclick="setM('aggressive')">Aggressive</button>
         </div>
-        
         <div class="lang-box">
             <button id="l-en" class="l-btn active" onclick="setL('en')">EN</button>
             <button id="l-ja" class="l-btn" onclick="setL('ja')">日本語</button>
@@ -58,31 +43,21 @@
     <main>
         <div class="container">
             <h1 id="t-h1">Optimize Prompt</h1>
-            <p id="t-p">Compressing logic to save tokens.</p>
-            
+            <p id="t-p" style="color:#64748b">Compressing logic to save tokens and prevent lockouts.</p>
             <textarea id="input" placeholder="Paste text here..."></textarea>
             <button class="go-btn" id="t-btn" onclick="run()">COMPRESS & OPTIMIZE</button>
-
             <div id="results">
                 <div class="out" id="output"></div>
                 <div class="stats">
-                    <div class="stat">
-                        <span class="label" id="t-s1">Original</span>
-                        <div class="val" id="v-old">0</div>
-                    </div>
-                    <div class="stat">
-                        <span class="label" id="t-s2">Compressed</span>
-                        <div class="val" id="v-new" style="color:var(--teal)">0</div>
-                    </div>
+                    <div class="stat"><span class="label" id="t-s1">Original</span><div class="val" id="v-old">0</div></div>
+                    <div class="stat"><span class="label" id="t-s2">Compressed</span><div class="val" id="v-new" style="color:var(--teal)">0</div></div>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
-        let mode = 'semantic';
-        let lang = 'en';
-
+        let mode = 'semantic', lang = 'en';
         const i18n = {
             en: { h1: "Optimize Prompt", p: "Compressing logic to save tokens.", btn: "COMPRESS & OPTIMIZE", s1: "Original", s2: "Compressed" },
             ja: { h1: "プロンプト最適化", p: "トークンを節約し制限を回避。", btn: "圧縮して実行", s1: "元サイズ", s2: "圧縮後" }
@@ -109,25 +84,8 @@
         function run() {
             const val = document.getElementById('input').value;
             if(!val) return;
-            
             let res = val;
 
             if (mode === 'aggressive') {
-                // Real compression: Deletes filler words so count drops
-                res = res.replace(/could you please|can you please|i was wondering if|i want you to|give suggestions on/gi, "")
-                         .replace(/\b(the|a|an|is|are|of|to|that|it|its|so|very|actually)\b/gi, "")
-                         .replace(/\s\s+/g, ' ').trim();
-            } else if (mode === 'xml') {
-                res = `<ctx>${res.trim()}</ctx>\n<tsk>Do</tsk>`;
-            } else {
-                res = `Task: ${res.trim()}`;
-            }
-
-            document.getElementById('output').innerText = res;
-            document.getElementById('v-old').innerText = val.length;
-            document.getElementById('v-new').innerText = res.length;
-            document.getElementById('results').style.display = 'block';
-        }
-    </script>
-</body>
-</html>
+                // TRUE COMPRESSION: Deletes stop-words so the count actually drops
+                res = res.replace(/could you please|can you please|i was wondering if|i want you to|give suggestions on/gi,
