@@ -72,4 +72,71 @@
     </main>
 
     <script>
-        let current
+        let currentMode = 'semantic';
+        let currentLang = 'en';
+
+        const i18n = {
+            en: { h1: "Optimize Prompt", p: "Compressing logic to save tokens.", btn: "COMPRESS & OPTIMIZE", s1: "Original", s2: "Compressed" },
+            ja: { h1: "プロンプト最適化", p: "トークンを節約し制限を回避。", btn: "圧縮して実行", s1: "元サイズ", s2: "圧縮後" }
+        };
+
+        function setLang(l) {
+            currentLang = l;
+            document.getElementById('l-en').classList.toggle('active', l === 'en');
+            document.getElementById('l-ja').classList.toggle('active', l === 'ja');
+            document.getElementById('h1-text').innerText = i18n[l].h1;
+            document.getElementById('p-text').innerText = i18n[l].p;
+            document.getElementById('btn-text').innerText = i18n[l].btn;
+            document.getElementById('s1-text').innerText = i18n[l].s1;
+            document.getElementById('s2-text').innerText = i18n[l].s2;
+        }
+
+        function setMode(m) {
+            currentMode = m;
+            ['semantic', 'xml', 'aggressive', 'ai'].forEach(id => {
+                const el = document.getElementById('m-' + id);
+                if(el) el.classList.toggle('active', (id === m || (id === 'ai' && m === 'free-ai')));
+            });
+        }
+
+        async function handleRun() {
+            const raw = document.getElementById('input-box').value;
+            if(!raw) return;
+            
+            let result = "";
+            const btn = document.getElementById('btn-text');
+            const originalText = btn.innerText;
+
+            if (currentMode === 'free-ai') {
+                btn.innerText = "AI THINKING...";
+                try {
+                    const response = await fetch("https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2", {
+                        headers: { Authorization: "Bearer YOUR_HF_TOKEN_HERE" }, // Replace with your token
+                        method: "POST",
+                        body: JSON.stringify({ inputs: `[INST] Rewrite this to be as short as possible for an AI prompt: ${raw} [/INST]` }),
+                    });
+                    const data = await response.json();
+                    result = data[0].generated_text.split('[/INST]')[1].trim();
+                } catch (e) {
+                    result = "Error: Please check your AI API token.";
+                }
+            } else if (currentMode === 'aggressive') {
+                // Force count down by stripping stop-words
+                result = raw.replace(/could you please|can you please|i want you to|give suggestions on/gi, "")
+                            .replace(/\b(the|a|an|is|are|of|to|that|it|its|so|very|actually)\b/gi, "")
+                            .replace(/\s\s+/g, ' ').trim();
+            } else if (currentMode === 'xml') {
+                result = `<ctx>${raw.trim()}</ctx>\n<tsk>Do</tsk>`;
+            } else {
+                result = `Task: ${raw.trim()}`;
+            }
+
+            btn.innerText = originalText;
+            document.getElementById('output-box').innerText = result;
+            document.getElementById('v-old').innerText = raw.length;
+            document.getElementById('v-new').innerText = result.length;
+            document.getElementById('results').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
