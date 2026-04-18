@@ -112,23 +112,35 @@
         }
 
         function process() {
-            const input = document.getElementById('input').value;
-            if(!input) return;
+    const raw = document.getElementById('input').value;
+    if(!raw) return;
+    
+    let res = raw;
 
-            let res = input;
+    if(currentMode === 'aggressive') {
+        // Step 1: Remove social 'fluff' and filler phrases
+        res = res.replace(/could you please|can you please|i was wondering if|i would like to|give suggestions on what we could add too|i want you to/gi, "");
+        
+        // Step 2: Remove common stop-words that don't change meaning
+        res = res.replace(/\b(the|a|an|is|are|of|to|that|it|its|so|very)\b/gi, "");
+        
+        // Step 3: Clean up extra spaces and newlines
+        res = res.replace(/\s\s+/g, ' ').trim();
+    } 
+    else if(currentMode === 'xml') {
+        res = `<ctx>${res.trim()}</ctx>\n<tsk>Act</tsk>`;
+    } 
+    else {
+        // Semantic: Only add a small header if it helps clarify
+        res = `TASK: ${res.trim()}`;
+    }
 
-            if(currentMode === 'aggressive') {
-                // Remove social lubricants and common stop-words
-                res = res.replace(/could you please|can you please|i was wondering if|i would like to|please|thank you/gi, "")
-                         .replace(/\b(the|a|an|is|are|of|to|that)\b/gi, "")
-                         .replace(/\s\s+/g, ' ').trim();
-            } else if(currentMode === 'xml') {
-                res = `<ctx>${res.trim()}</ctx>\n<task>Process</task>`;
-            } else {
-                // Semantic mode: simple structure
-                res = `Task: ${res.trim()}`;
-            }
-
+    // Update UI
+    document.getElementById('output').innerText = res;
+    document.getElementById('v-old').innerText = raw.length;
+    document.getElementById('v-new').innerText = res.length;
+    document.getElementById('result-area').style.display = 'block';
+}
             document.getElementById('output').innerText = res;
             document.getElementById('v-old').innerText = input.length;
             document.getElementById('v-new').innerText = res.length;
