@@ -1,6 +1,5 @@
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
-
+  if (req.method !== 'POST') return res.status(405).send('Use POST');
   const { prompt } = req.body;
 
   try {
@@ -13,17 +12,19 @@ export default async function handler(req, res) {
         },
         method: "POST",
         body: JSON.stringify({ 
-          inputs: `[INST] Optimize and shorten this prompt for an AI, removing filler words but keeping core intent: ${prompt} [/INST]` 
+          inputs: `[INST] Task: Compress the following prompt into the shortest possible version for an AI. 
+          Rules: Remove filler words, use shorthand, and delete non-essential adjectives. 
+          Return ONLY the compressed text.
+          Prompt: ${prompt} [/INST]` 
         }),
       }
     );
 
     const data = await response.json();
-    // Mistral usually returns an array with generated_text
-    const result = data[0]?.generated_text?.split('[/INST]')[1]?.trim() || "Compression failed.";
-    
+    // Extracting the AI's response while stripping the instruction tags
+    const result = data[0]?.generated_text?.split('[/INST]')[1]?.trim() || "AI Error";
     res.status(200).json({ result });
   } catch (error) {
-    res.status(500).json({ error: "AI Connection Error" });
+    res.status(500).json({ error: "Check HF_TOKEN in Vercel Settings" });
   }
 }
