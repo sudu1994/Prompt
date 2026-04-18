@@ -3,33 +3,50 @@ let currentLang = 'en';
 
 const config = {
     en: {
-        fillers: [/could you please/gi, /i was wondering if/gi, /i would like you to/gi, /at this point in time/gi],
+        fillers: [
+            { r: /could you please|can you please|i was wondering if you could/gi, t: "" },
+            { r: /i would like to have|i want you to/gi, t: "Task:" },
+            { r: /due to the fact that|because of the fact that/gi, t: "because" },
+            { r: /at this point in time|in the current climate/gi, t: "currently" },
+            { r: /give suggestions on what we could add too/gi, t: "Suggest additions" },
+            { r: /so that we could/gi, t: "to" }
+        ],
         shorthand: {
-            "aws certified cloud practitioner": "AWS-CP",
-            "root directory": "ROOT_DIR",
-            "solution architect": "AWS-SA",
-            "identity and access management": "IAM"
+            "prompt engineering": "PE",
+            "prompt compression": "PC",
+            "efficiently": "eff.",
+            "instructions": "rules"
         }
     },
     ja: {
-        fillers: [/ていただけますでしょうか/g, /よろしくお願いいたします/g, /お世話になっております/g],
+        fillers: [
+            { r: /〜ていただけますでしょうか|〜ていただけますか|〜てください/g, t: "。 " },
+            { r: /お世話になっております。|よろしくお願いいたします。/g, t: "" },
+            { r: /〜について教えてください/g, t: "の詳細" },
+            { r: /といった形になります/g, t: "です" }
+        ],
         shorthand: {
-            "をご確認ください": "確認求む",
-            "〜だと思います": "、"
+            "プロンプト": "PRMT",
+            "効率的": "効率"
         }
     }
 };
 
 function setMode(m) {
     currentMode = m;
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('m-' + m).classList.add('active');
+    // UI Update: Highlight active mode
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-[#4bdad8]/10', 'text-[#4bdad8]', 'border-l-4', 'border-[#4bdad8]');
+    });
+    const activeBtn = document.getElementById('m-' + m);
+    activeBtn.classList.add('active', 'bg-[#4bdad8]/10', 'text-[#4bdad8]', 'border-l-4', 'border-[#4bdad8]');
 }
 
 function setLang(l) {
     currentLang = l;
-    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('l-' + l).classList.add('active');
+    // UI Update: Highlight active language
+    document.getElementById('l-en').className = l === 'en' ? 'lang-btn active bg-[#4bdad8] text-[#002d2d]' : 'lang-btn text-slate-500';
+    document.getElementById('l-ja').className = l === 'ja' ? 'lang-btn active bg-[#4bdad8] text-[#002d2d]' : 'lang-btn text-slate-500';
 }
 
 function process() {
@@ -38,35 +55,35 @@ function process() {
 
     let optimized = raw;
 
-    // 1. Semantic Pruning
-    config[currentLang].fillers.forEach(regex => {
-        optimized = optimized.replace(regex, "");
+    // 1. Language-Specific Pruning
+    config[currentLang].fillers.forEach(item => {
+        optimized = optimized.replace(item.r, item.t);
     });
 
-    // 2. Technical Namespacing (The $Path Rule)
-    optimized = optimized.replace(/(?:in|inside)\s(?:the\s)?([\w\-\/]+)\sfolder/gi, "[$1]:");
-
-    // 3. Technical Shorthand
+    // 2. Technical Shorthand
     Object.entries(config[currentLang].shorthand).forEach(([key, val]) => {
         optimized = optimized.replace(new RegExp(key, 'gi'), val);
     });
 
-    // 4. Mode Logic
+    // 3. Mode Logic Logic
     if (currentMode === 'xml') {
-        optimized = `<context>\n${optimized}\n</context>\n<task>Execute precisely. No preamble.</task>`;
+        optimized = `<context>\n${optimized.trim()}\n</context>\n<task>Process concisely</task>`;
     } else if (currentMode === 'aggressive') {
-        optimized = optimized.replace(/\b(the|a|an)\b/gi, "").replace(/\s\s+/g, ' ');
+        optimized = optimized.replace(/\b(the|a|an)\b/gi, "")
+                             .replace(/[.,!?;:]/g, "")
+                             .replace(/\s\s+/g, ' ');
     } else if (currentMode === 'semantic') {
-        optimized = `[ROLE: Expert]\n[TASK]: ${optimized}\n[FORMAT: Concise]`;
+        optimized = `[Task]: ${optimized.trim()}\n[Output]: Concise/No-filler`;
     }
 
-    updateUI(raw, optimized);
+    updateUI(raw, optimized.trim());
 }
 
 function updateUI(oldVal, newVal) {
-    const oldTokens = Math.ceil(oldVal.length / 4);
-    const newTokens = Math.ceil(newVal.length / 4);
-    const pct = Math.round(((oldTokens - newTokens) / oldTokens) * 100);
+    // Audit: Use a more accurate token estimate (4 chars/token for EN, 1 char/token for JA)
+    const oldTokens = currentLang === 'en' ? Math.ceil(oldVal.length / 4) : oldVal.length;
+    const newTokens = currentLang === 'en' ? Math.ceil(newVal.length / 4) : newVal.length;
+    const pct = Math.round(((oldVal.length - newVal.length) / oldVal.length) * 100);
 
     document.getElementById('output').innerText = newVal;
     document.getElementById('stat-old').innerText = oldTokens;
@@ -74,14 +91,3 @@ function updateUI(oldVal, newVal) {
     document.getElementById('stat-pct').innerText = (pct > 0 ? pct : 0) + "%";
     document.getElementById('result-box').classList.remove('hidden');
 }
-
-function copyResult() {
-    const text = document.getElementById('output').innerText;
-    navigator.clipboard.writeText(text);
-    alert("Optimized prompt copied!");
-}
-
-// Live Char Count
-document.getElementById('input').addEventListener('input', (e) => {
-    document.getElementById('char-count').innerText = e.target.value.length + " Chars";
-});
