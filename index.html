@@ -1,22 +1,26 @@
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Botanical v3.2 | Semantic Optimizer</title>
+    <title>Botanical v3.3 | Fixed UI</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
     
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #0a0f0f; color: #dce8e7; }
-        .nav-btn { @apply w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-white/5 transition-all; }
-        .nav-btn.active { background-color: rgba(75, 218, 216, 0.1); color: #4bdad8; border-left: 4px solid #4bdad8; border-top-left-radius: 0; border-bottom-left-radius: 0; }
-        .lang-btn { @apply flex-1 py-2 text-[10px] font-bold rounded text-slate-500 transition-all; }
-        .lang-btn.active { background-color: #4bdad8; color: #002d2d; }
-        .stat-card { @apply bg-white/[0.02] border border-white/5 p-4 rounded-xl; }
-        .stat-card label { @apply text-[9px] uppercase tracking-widest text-slate-500 font-bold block mb-1; }
-        .stat-card div { @apply text-xl font-mono font-bold; }
+        /* Hard-coded UI States to ensure buttons always work */
+        .btn-active { 
+            background-color: rgba(75, 218, 216, 0.1) !important; 
+            color: #4bdad8 !important; 
+            border-left: 4px solid #4bdad8 !important; 
+        }
+        .lang-active { 
+            background-color: #4bdad8 !important; 
+            color: #002d2d !important; 
+        }
+        .nav-btn { transition: all 0.2s; border-left: 4px solid transparent; }
     </style>
 </head>
 <body class="flex min-h-screen">
@@ -24,26 +28,26 @@
     <aside class="w-64 border-r border-white/5 flex flex-col hidden md:flex sticky top-0 h-screen bg-[#0d1414]">
         <div class="p-8">
             <h1 class="font-['Manrope'] font-extrabold text-2xl text-[#4bdad8] tracking-tighter">BOTANICAL</h1>
-            <p class="text-[10px] text-slate-500 tracking-[0.2em] uppercase mt-1" data-key="version">Semantic Engine v3.2</p>
+            <p class="text-[10px] text-slate-500 tracking-[0.2em] uppercase mt-1" data-key="version">Semantic Engine v3.3</p>
         </div>
         
         <nav class="flex-grow px-4 space-y-2">
-            <button onclick="setMode('semantic')" id="m-semantic" class="nav-btn active">
+            <button onclick="setMode('semantic')" id="m-semantic" class="nav-btn btn-active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold">
                 <span class="material-symbols-outlined">psychology</span> <span data-key="mode-semantic">Semantic</span>
             </button>
-            <button onclick="setMode('xml')" id="m-xml" class="nav-btn">
+            <button onclick="setMode('xml')" id="m-xml" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400">
                 <span class="material-symbols-outlined">code</span> <span data-key="mode-xml">XML (Claude)</span>
             </button>
-            <button onclick="setMode('aggressive')" id="m-aggressive" class="nav-btn">
+            <button onclick="setMode('aggressive')" id="m-aggressive" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400">
                 <span class="material-symbols-outlined">bolt</span> <span data-key="mode-aggressive">Aggressive</span>
             </button>
         </nav>
 
         <div class="p-6 border-t border-white/5">
-            <p class="text-[10px] font-bold text-slate-500 mb-2" data-key="lang-label">LANGUAGE / 言語</p>
+            <p class="text-[10px] font-bold text-slate-500 mb-2" data-key="lang-label">LANGUAGE</p>
             <div class="flex p-1 bg-black rounded-lg">
-                <button id="l-en" onclick="setLang('en')" class="lang-btn active">EN</button>
-                <button id="l-ja" onclick="setLang('ja')" class="lang-btn">日本語</button>
+                <button id="l-en" onclick="setLang('en')" class="lang-btn lang-active flex-1 py-2 text-[10px] font-bold rounded transition-all">EN</button>
+                <button id="l-ja" onclick="setLang('ja')" class="lang-btn flex-1 py-2 text-[10px] font-bold rounded text-slate-500 transition-all">日本語</button>
             </div>
         </div>
     </aside>
@@ -51,79 +55,88 @@
     <main class="flex-grow p-8 lg:p-16 max-w-5xl mx-auto w-full">
         <header class="mb-12">
             <h2 class="text-4xl font-['Manrope'] font-extrabold tracking-tight" data-key="title">Optimize Prompt</h2>
-            <p class="text-slate-400 mt-2" data-key="subtitle">Compressing logic to save tokens and prevent lockouts.</p>
+            <p class="text-slate-400 mt-2" data-key="subtitle">Compressing logic to save tokens.</p>
         </header>
 
-        <section class="space-y-6">
-            <div class="relative">
-                <textarea id="input" class="w-full h-64 bg-[#131b1b] border border-white/5 rounded-2xl p-6 focus:ring-2 focus:ring-[#4bdad8] outline-none transition-all" data-key="placeholder"></textarea>
-            </div>
-
-            <button onclick="process()" class="w-full bg-[#4bdad8] text-[#002d2d] py-5 rounded-2xl font-extrabold text-xl shadow-xl shadow-[#4bdad8]/10 hover:brightness-110 active:scale-[0.98] transition-all" data-key="btn-run">
-                COMPRESS & OPTIMIZE
+        <div class="space-y-6">
+            <textarea id="input" class="w-full h-64 bg-[#131b1b] border border-white/5 rounded-2xl p-6 focus:ring-2 focus:ring-[#4bdad8] outline-none" placeholder="Paste prompt here..."></textarea>
+            
+            <button onclick="process()" class="w-full bg-[#4bdad8] text-[#002d2d] py-5 rounded-2xl font-extrabold text-xl hover:brightness-110 active:scale-95 transition-all" data-key="btn-run">
+                OPTIMIZE
             </button>
 
-            <div id="result-box" class="hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <span class="text-[10px] font-bold text-[#4bdad8] tracking-widest uppercase" data-key="result-head">Result</span>
-                    <button onclick="copyResult()" class="text-[#4bdad8] text-xs flex items-center gap-1 hover:underline">
-                        <span class="material-symbols-outlined text-sm">content_copy</span> <span data-key="copy">Copy</span>
-                    </button>
-                </div>
-                <div id="output" class="bg-white/5 border border-[#4bdad8]/20 rounded-2xl p-6 text-[#bbf6f5] font-medium whitespace-pre-wrap leading-relaxed min-h-[100px]"></div>
-                
-                <div class="grid grid-cols-3 gap-4 mt-6">
-                    <div class="stat-card">
-                        <label data-key="stat-old">Original Tokens</label>
-                        <div id="stat-old">0</div>
+            <div id="result-box" class="hidden space-y-4 bg-white/5 p-6 rounded-2xl border border-white/10">
+                <div id="output" class="text-[#bbf6f5] font-medium whitespace-pre-wrap"></div>
+                <div class="flex gap-4">
+                    <div class="flex-1 bg-black/20 p-3 rounded-lg text-center">
+                        <label class="text-[9px] text-slate-500 font-bold block" data-key="stat-old">ORIGINAL</label>
+                        <span id="stat-old" class="font-mono">0</span>
                     </div>
-                    <div class="stat-card">
-                        <label data-key="stat-new">Compressed</label>
-                        <div id="stat-new" class="text-[#4bdad8]">0</div>
-                    </div>
-                    <div class="stat-card border-[#4bdad8]/20">
-                        <label data-key="stat-saved">Savings</label>
-                        <div id="stat-pct" class="text-emerald-400">0%</div>
+                    <div class="flex-1 bg-black/20 p-3 rounded-lg text-center">
+                        <label class="text-[9px] text-slate-500 font-bold block" data-key="stat-new">NEW</label>
+                        <span id="stat-new" class="font-mono text-[#4bdad8]">0</span>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
     </main>
 
     <script>
         const i18n = {
             en: {
-                "version": "Semantic Engine v3.2",
                 "mode-semantic": "Semantic", "mode-xml": "XML (Claude)", "mode-aggressive": "Aggressive",
-                "lang-label": "LANGUAGE", "title": "Optimize Prompt",
-                "subtitle": "Compressing logic to save tokens and prevent 3-hour lockouts.",
-                "placeholder": "Paste your idea or code request here...",
-                "btn-run": "COMPRESS & OPTIMIZE", "result-head": "Result", "copy": "Copy",
-                "stat-old": "Original", "stat-new": "Compressed", "stat-saved": "Saved"
+                "lang-label": "LANGUAGE", "title": "Optimize Prompt", "subtitle": "Compressing logic to save tokens.",
+                "btn-run": "OPTIMIZE", "stat-old": "ORIGINAL", "stat-new": "COMPRESSED"
             },
             ja: {
-                "version": "セマンティックエンジン v3.2",
-                "mode-semantic": "セマンティック", "mode-xml": "XML (Claude用)", "mode-aggressive": "徹底圧縮",
-                "lang-label": "言語切り替え", "title": "プロンプト最適化",
-                "subtitle": "トークンを節約し、3時間の利用制限を回避します。",
-                "placeholder": "ここにアイデアやリクエストを貼り付けてください...",
-                "btn-run": "圧縮して最適化する", "result-head": "結果", "copy": "コピー",
-                "stat-old": "元サイズ", "stat-new": "圧縮後", "stat-saved": "節約率"
+                "mode-semantic": "セマンティック", "mode-xml": "XML形式", "mode-aggressive": "徹底圧縮",
+                "lang-label": "言語", "title": "プロンプト最適化", "subtitle": "トークンを節約します。",
+                "btn-run": "実行する", "stat-old": "元サイズ", "stat-new": "圧縮後"
             }
         };
 
-        const config = {
-            en: {
-                fillers: [
-                    { r: /could you please|can you please|i was wondering if/gi, t: "" },
-                    { r: /i would like to have|i want you to/gi, t: "Task:" },
-                    { r: /due to the fact that/gi, t: "because" },
-                    { r: /give suggestions on what we could add too/gi, t: "Suggest additions" }
-                ],
-                shorthand: { "prompt engineering": "PE", "prompt compression": "PC", "efficiently": "eff." }
-            },
-            ja: {
-                fillers: [
-                    { r: /ていただけますでしょうか|よろしくお願いいたします|お世話になっております/g, t: "" },
-                    { r: /について詳しく教えてください/g, t: "の詳細" }
-                ],
+        let currentMode = 'semantic';
+        let currentLang = 'en';
+
+        // THE FIX: Direct DOM manipulation without relying on Tailwind classes for state
+        function setLang(l) {
+            currentLang = l;
+            
+            // Toggle Language Buttons
+            document.getElementById('l-en').className = (l === 'en') ? 'lang-btn lang-active flex-1 py-2 text-[10px] font-bold rounded' : 'lang-btn flex-1 py-2 text-[10px] font-bold rounded text-slate-500';
+            document.getElementById('l-ja').className = (l === 'ja') ? 'lang-btn lang-active flex-1 py-2 text-[10px] font-bold rounded' : 'lang-btn flex-1 py-2 text-[10px] font-bold rounded text-slate-500';
+
+            // Translate Text
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if (i18n[l][key]) el.innerText = i18n[l][key];
+            });
+        }
+
+        function setMode(m) {
+            currentMode = m;
+            // Toggle Mode Buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('btn-active');
+                btn.classList.add('text-slate-400');
+            });
+            document.getElementById('m-' + m).classList.add('btn-active');
+            document.getElementById('m-' + m).classList.remove('text-slate-400');
+        }
+
+        function process() {
+            const input = document.getElementById('input').value;
+            if(!input) return;
+            
+            let res = input;
+            if(currentMode === 'aggressive') res = res.replace(/\b(the|a|an)\b/gi, "").replace(/\s\s+/g, ' ');
+            if(currentMode === 'xml') res = `<ctx>${res}</ctx>\n<task>Do</task>`;
+            
+            document.getElementById('output').innerText = res;
+            document.getElementById('stat-old').innerText = input.length;
+            document.getElementById('stat-new').innerText = res.length;
+            document.getElementById('result-box').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
